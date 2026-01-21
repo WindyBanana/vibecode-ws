@@ -1,0 +1,248 @@
+# First Interaction Workflow
+
+## When to Use This
+Use this workflow when:
+- User has just opened this template for the first time
+- No `.ai/testing/current-settings.json` file exists
+- User asks for anything before testing preference is set
+
+## FIRST: Generate package.json and Install Dependencies
+
+**This template intentionally has NO package.json file!**
+
+Why? So users always get the **latest stable versions** of all dependencies, not outdated ones.
+
+### Step 1: Check if package.json exists
+
+```bash
+ls package.json
+```
+
+**If package.json DOES NOT exist:**
+
+### Step 2: Detect Latest pnpm Version
+
+Before generating package.json, get the current pnpm version:
+
+```bash
+pnpm --version
+```
+
+This returns the version (e.g., "9.0.0" or "10.5.2"). You'll use this in the packageManager field.
+
+**If pnpm command fails** (not installed yet), use a fallback:
+- Check npm registry: `npm view pnpm version`
+- Or use safe default: "9.0.0"
+
+### Step 3: Generate Fresh package.json
+
+Read these files:
+1. `.ai/project-dependencies.md` - Lists all required packages
+2. `.ai/package-scripts.md` - Lists all npm scripts
+
+Then create package.json with:
+- Project name based on folder name
+- **Latest stable versions** of all dependencies
+- All required scripts
+- **packageManager with detected version** (from Step 2)
+
+**Example package.json structure:**
+```json
+{
+  "name": "[folder-name]-app",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@[detected-version]",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "setup-context7": "node .ai/scripts/setup-context7.js",
+    "cleanup-unused": "node .ai/scripts/cleanup-configs.js"
+  },
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "latest",
+    "@testing-library/react": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@vitejs/plugin-react": "latest",
+    "@vitest/ui": "latest",
+    "autoprefixer": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "latest",
+    "jsdom": "latest",
+    "postcss": "latest",
+    "tailwindcss": "^3.4.0",
+    "typescript": "latest",
+    "vitest": "latest"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+```
+
+**Important:**
+- Use `"latest"` for all dependency version numbers (works fine for dependencies)
+- Use detected version for `packageManager` field (e.g., "pnpm@10.5.2")
+
+### Step 4: Install Dependencies
+
+```bash
+pnpm install
+```
+
+**Tell user while setting up:**
+```
+"Welcome! I'm setting up your project with the latest versions of Next.js and React...
+(this takes about 30 seconds)"
+```
+
+**After install completes:**
+```
+"✓ Ready! Your project now has:
+  - Next.js [version]
+  - React [version]
+  - TypeScript
+  - Tailwind CSS
+  - Vitest for testing
+
+Now let me help you get started..."
+```
+
+**DO NOT ask permission** - just generate and install. User expects the project to work.
+
+## Onboarding Steps
+
+### Step 1: Warm Welcome
+Greet the user warmly and explain what this template does.
+
+**Example:**
+```
+Hi! Welcome to your AI-powered development template!
+
+I'm here to help you build your app, and I'll guide you through
+everything step by step. You don't need to know how to code -
+just tell me what you want to build, and I'll create it.
+
+Before we start, I need to ask you one quick question about testing...
+```
+
+### Step 2: Present Testing Options
+Read and present: `.ai/onboarding/testing-choice.md`
+
+This is CRITICAL. User's choice affects how you work throughout the entire project.
+
+**Present the three options clearly** (see testing-choice.md for exact wording).
+
+### Step 3: Save User's Choice
+Based on their answer, create `.ai/testing/current-settings.json`:
+
+**Option 1: Complete Test Suite**
+```json
+{
+  "testingMode": "complete",
+  "autoWriteTests": true,
+  "explainTestFailures": true,
+  "createdAt": "2024-01-15T10:30:00Z",
+  "userChoice": "Always write tests for every feature"
+}
+```
+
+**Option 2: Smart Testing**
+```json
+{
+  "testingMode": "smart",
+  "autoWriteTests": false,
+  "suggestTests": true,
+  "explainTestFailures": true,
+  "createdAt": "2024-01-15T10:30:00Z",
+  "userChoice": "AI suggests tests, user decides"
+}
+```
+
+**Option 3: No Automatic Tests**
+```json
+{
+  "testingMode": "none",
+  "autoWriteTests": false,
+  "suggestTests": false,
+  "explainTestFailures": false,
+  "createdAt": "2024-01-15T10:30:00Z",
+  "userChoice": "Fast prototyping, no automatic tests"
+}
+```
+
+### Step 4: Confirm and Explain Next Steps
+After saving their choice:
+
+**Example:**
+```
+Perfect! I've set up testing the way you want.
+
+{IF complete}: I'll automatically write tests for every feature to keep your app safe and bug-free.
+
+{IF smart}: I'll suggest adding tests when it makes sense, and you can decide each time.
+
+{IF none}: I'll focus on building features quickly without automatic tests.
+
+Now, what would you like to build? Tell me about your idea!
+```
+
+### Step 5: Mark Onboarding Complete
+Create `.ai/onboarding/completed.json`:
+```json
+{
+  "completedAt": "2024-01-15T10:30:00Z",
+  "testingMode": "smart",
+  "contextSeven": "available"
+}
+```
+
+### Step 6: Listen to User's Idea
+Now listen carefully to what they want to build and follow the appropriate workflow from `.ai/workflows/`.
+
+## Important Notes
+
+### If User Asks to Skip Onboarding
+Gently explain why it's important:
+
+"I understand you're eager to start! This one question just takes 10 seconds and helps me work the way you prefer. It's about whether you want automatic testing for your code. Should I explain what that means?"
+
+### If User Doesn't Understand Testing
+Use the ELI5 explanation from `.ai/onboarding/testing-choice-explained.md`
+
+### If User Changes Their Mind Later
+No problem! They can always change settings:
+
+"Want to change your testing preference? Just say:
+- 'Change testing to complete'
+- 'Change testing to smart'
+- 'Change testing to none'"
+
+Then update `.ai/testing/current-settings.json` accordingly.
+
+## After Onboarding
+
+From now on, every interaction should:
+1. **ASK if uncertain** - Read `.ai/ASK_DONT_ASSUME.md`
+2. Check `.ai/testing/current-settings.json` for testing mode
+3. Use context7 for up-to-date documentation
+4. Follow flexible rules from `.ai/rules/`
+5. Be patient and explain concepts simply
+6. Verify understanding before and after building
+
+## Next Workflow
+After onboarding, proceed to:
+- `.ai/workflows/understand-user-request.md`
